@@ -11,11 +11,11 @@ const rollupEmptyModule = require.resolve("rollup-plugin-node-resolve/src/empty.
 export default {
 	onwarn: ()=>{},
 	format: "umd",
-	moduleName: "FormBlueprint",
+	moduleName: "PouchDBSubscribe",
 	plugins: [
 		{
 			resolveId: function(id) {
-				if (id === "jquery") return false;
+				if (id === "jquery") return rollupEmptyModule;
 
 				if (has(builtins, id)) {
 					return builtins[id] || rollupEmptyModule;

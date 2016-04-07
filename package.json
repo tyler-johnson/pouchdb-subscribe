@@ -36,6 +36,7 @@
     "browserify": "^13.0.0",
     "eslint": "^2.7.0",
     "node-libs-browser": "^1.0.0",
+    "pouchdb": "^5.3.1",
     "rollup": "^0.25.1",
     "rollup-plugin-babel": "^2.4.0",
     "rollup-plugin-commonjs": "^2.2.1",

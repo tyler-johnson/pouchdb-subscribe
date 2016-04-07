@@ -28,7 +28,7 @@ test-node: test.js index.js
 	node $<
 
 test-browser: test.js browser.js
-	$(BIN)/browserify $< --debug | $(BIN)/tape-run
+	$(BIN)/browserify $< -i jquery --debug | $(BIN)/tape-run
 
 clean:
 	rm -rf index.js browser.js test.js dist/
