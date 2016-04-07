@@ -1,36 +1,36 @@
 BIN = ./node_modules/.bin
 SRC = $(wildcard src/* src/*/*)
-OUT = index.js
+TEST = $(wildcard test/* test/*/*)
 
-build: $(OUT)
+build: index.js browser.js dist/browser.min.js
 
-define ROLLUP
-require("rollup").rollup({
-	entry: "$<",
-	plugins: [
-		require("rollup-plugin-babel")({
-			exclude: 'node_modules/**'
-		})
-	]
-}).then(function(bundle) {
-	var result = bundle.generate({
-		format: "cjs"
-	});
-	process.stdout.write(result.code);
-}).catch(function(e) {
-	process.nextTick(function() {
-		throw e;
-	});
-});
-endef
+index.js: src/index.js $(SRC)
+	$(BIN)/rollup $< -c build/rollup.node.js > $@
 
-export ROLLUP
+browser.js: src/index.js $(SRC)
+	$(BIN)/rollup $< -c build/rollup.browser.js > $@
 
-$(OUT): src/index.js $(SRC)
-	# $< -> $@
-	@node -e "$$ROLLUP" > $@
+dist:
+	mkdir -p $@
+
+dist/browser.js: src/index.js $(SRC) dist
+	$(BIN)/rollup $< -c build/rollup.full.js > $@
+
+dist/browser.min.js: dist/browser.js
+	$(BIN)/uglifyjs $< -mc warnings=false > $@
+
+test.js: test/index.js $(TEST)
+	$(BIN)/rollup $< -c build/rollup.node.js > $@
+
+test: test-node test-browser
+
+test-node: test.js index.js
+	node $<
+
+test-browser: test.js browser.js
+	$(BIN)/browserify $< -i jquery --debug | $(BIN)/tape-run
 
 clean:
-	rm $(OUT)
+	rm -rf index.js browser.js test.js dist/
 
-.PHONY: build
+.PHONY: build clean test test-node test-browser
