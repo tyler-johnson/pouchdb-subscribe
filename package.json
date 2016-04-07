@@ -1,28 +1,56 @@
 {
-	"name": "pouchdb-subscribe",
-	"version": "0.1.0",
-	"description": "Synchronous document look up for PouchDB.",
-	"author": "Tyler Johnson <tyler@vintyge.com>",
-	"main": "index.js",
-	"jsnext:main": "src/index.js",
-	"scripts": {
-		"lint": "jshint src/ test/",
-		"build": "make",
-		"prepublish": "npm run lint && npm run build"
-	},
-	"dependencies": {
-		"backbone": "~1.2.3",
-		"lodash": "~4.0.0",
-		"mingo": "~0.6.3",
-		"trackr": "~2.0.2"
-	},
-	"keywords": [],
-	"license": "MIT",
-	"devDependencies": {
-		"babel-preset-es2015-rollup": "~1.1.1",
-		"jshint": "~2.9.1",
-		"rollup": "~0.25.1",
-		"rollup-plugin-babel": "~2.3.9",
-		"tape": "~4.4.0"
-	}
+  "name": "pouchdb-subscribe",
+  "description": "Synchronous document look up for PouchDB.",
+  "author": "Tyler Johnson <tyler@vintyge.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyler-johnson/pouchdb-subscribe.git"
+  },
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "lint": "eslint src/ test/",
+    "build": "make clean && make",
+    "test": "make test",
+    "prepublish": "npm run build",
+    "autorelease": "autorelease pre && npm publish && autorelease post"
+  },
+  "dependencies": {
+    "backbone": "^1.2.3",
+    "lodash": "^4.0.0",
+    "mingo": "^0.6.3",
+    "trackr": "^2.0.2"
+  },
+  "devDependencies": {
+    "autorelease": "^1.6.0",
+    "autorelease-github": "^1.1.1",
+    "autorelease-travis": "^1.2.1",
+    "babel-eslint": "^6.0.2",
+    "babel-plugin-external-helpers": "^6.5.0",
+    "babel-plugin-lodash": "^2.2.2",
+    "babel-plugin-transform-async-to-generator": "^6.7.4",
+    "babel-plugin-transform-es2015-destructuring": "^6.6.5",
+    "babel-plugin-transform-es2015-parameters": "^6.7.0",
+    "babel-plugin-transform-object-rest-spread": "^6.6.5",
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "browserify": "^13.0.0",
+    "eslint": "^2.7.0",
+    "node-libs-browser": "^1.0.0",
+    "rollup": "^0.25.1",
+    "rollup-plugin-babel": "^2.4.0",
+    "rollup-plugin-commonjs": "^2.2.1",
+    "rollup-plugin-json": "^2.0.0",
+    "rollup-plugin-node-globals": "1.0.3",
+    "rollup-plugin-node-resolve": "^1.5.0",
+    "tape": "^4.4.0",
+    "tape-run": "^2.1.3",
+    "uglify-js": "^2.6.2"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "browser.js",
+    "dist"
+  ]
 }
