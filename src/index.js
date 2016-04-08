@@ -1,16 +1,17 @@
 import Subscription from "./subscription";
 import Cursor from "./cursor";
-import Backbone from "backbone";
+import {Collection as BCollection} from "backbone-collection";
+import {Model as BModel} from "backbone-model";
 import Trackr from "trackr";
 
-var Model = Backbone.Model.extend({
+var Model = BModel.extend({
 	idAttribute: "_id",
 	initialize: function() {
 		this.subscriptions = new Set();
 	}
 });
 
-var Collection = Backbone.Collection.extend({
+var Collection = BCollection.extend({
 	model: Model
 });
 

@@ -2,7 +2,7 @@ import {iteratee} from "lodash";
 import Trackr from "trackr";
 // import normalizeQuery from "./utils/query.js";
 import Mingo from "mingo";
-import Backbone from "backbone";
+import {Collection} from "backbone-collection";
 import {EventEmitter} from "events";
 
 export default class Cursor extends EventEmitter {
@@ -14,7 +14,7 @@ export default class Cursor extends EventEmitter {
 		let kpa = options.keepalive;
 		let kpabool = typeof kpa === "boolean";
 		let runSort = iteratee(options.sort, this);
-		let subset = new Backbone.Collection(null, {
+		let subset = new Collection(null, {
 			comparator: function(m) {
 				return runSort(self._parseModel(m));
 			}

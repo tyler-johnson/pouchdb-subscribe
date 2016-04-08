@@ -1,5 +1,6 @@
 {
   "name": "pouchdb-subscribe",
+  "version": "0.0.0-edge",
   "description": "Synchronous document look up for PouchDB.",
   "author": "Tyler Johnson <tyler@vintyge.com>",
   "repository": {
@@ -16,7 +17,8 @@
     "autorelease": "autorelease pre && npm publish && autorelease post"
   },
   "dependencies": {
-    "backbone": "^1.2.3",
+    "backbone-collection": "^1.0.10",
+    "backbone-model": "^1.0.10",
     "lodash": "^4.0.0",
     "mingo": "^0.6.3",
     "trackr": "^2.0.2"

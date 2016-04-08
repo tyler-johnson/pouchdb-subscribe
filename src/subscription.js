@@ -1,6 +1,6 @@
 import {assign,once} from "lodash";
 import {EventEmitter} from "events";
-import Backbone from "backbone";
+import {Collection} from "backbone-collection";
 import Trackr from "trackr";
 
 export default class Subscription extends EventEmitter {
@@ -14,7 +14,7 @@ export default class Subscription extends EventEmitter {
 			// changes feed filter name
 			name: typeof name === "string" && name ? name : "*",
 			// holds documents in the subscription
-			docs: new Backbone.Collection(),
+			docs: new Collection(),
 			// promise for current load
 			loading: false,
 			// whether of not ready
