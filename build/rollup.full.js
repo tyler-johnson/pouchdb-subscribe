@@ -15,8 +15,6 @@ export default {
 	plugins: [
 		{
 			resolveId: function(id) {
-				if (id === "jquery") return rollupEmptyModule;
-
 				if (has(builtins, id)) {
 					return builtins[id] || rollupEmptyModule;
 				}
