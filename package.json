@@ -1,5 +1,6 @@
 {
   "name": "pouchdb-subscribe",
+  "version": "0.0.0-edge",
   "description": "Synchronous document look up for PouchDB.",
   "author": "Tyler Johnson <tyler@vintyge.com>",
   "repository": {
