@@ -1,7 +1,8 @@
 import test from "tape";
 import PouchDB from "pouchdb";
 
-PouchDB.plugin(require("./")());
+const {default:plugin} = require("./");
+PouchDB.plugin(plugin());
 
 test("loads the subscribe plugin", function(t) {
 	t.plan(3);
