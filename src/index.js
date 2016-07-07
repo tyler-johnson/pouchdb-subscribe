@@ -2,30 +2,30 @@ import Subscription from "./subscription";
 import Cursor from "./cursor";
 import {Collection as BCollection} from "backbone-collection";
 import {Model as BModel} from "backbone-model";
-import Trackr from "trackr";
 
-var Model = BModel.extend({
+const Model = BModel.extend({
 	idAttribute: "_id",
 	initialize: function() {
 		this.subscriptions = new Set();
 	}
 });
 
-var Collection = BCollection.extend({
+const Collection = BCollection.extend({
 	model: Model
 });
 
-export default function plugin() {
+export default function plugin(opts={}) {
+	const { Subscription:_Subscription=Subscription, Cursor:_Cursor=Cursor } = opts;
+
 	return {
 		subscription_doc_cache: new Collection(),
+		Subscription: _Subscription,
+		Cursor: _Cursor,
 		subscribe: function(name, cb) {
 			if (typeof name === "function") [cb,name] = [name,null];
 
 			// create subscription
-			let sub = new Subscription(this, name);
-
-			// clear on invalidate if running reactively
-			if (Trackr.active) Trackr.onInvalidate(sub.stop.bind(sub));
+			let sub = new _Subscription(this, name);
 
 			// auto load the subscription
 			sub.load(cb);
@@ -33,7 +33,7 @@ export default function plugin() {
 			return sub;
 		},
 		find: function(query, options) {
-			return new Cursor(this, query, options);
+			return new _Cursor(this, query, options);
 		},
 		findOne: function(query, options) {
 			let docs = this.find(query, options).fetch();
@@ -42,6 +42,4 @@ export default function plugin() {
 	};
 }
 
-plugin.Subscription = Subscription;
-plugin.Cursor = Cursor;
-plugin.Collection = Collection;
+export {Subscription,Cursor,Collection};

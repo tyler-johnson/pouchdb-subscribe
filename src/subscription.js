@@ -1,35 +1,35 @@
-import {assign,once} from "lodash";
 import {EventEmitter} from "events";
 import {Collection} from "backbone-collection";
-import Trackr from "trackr";
+
+const CHANGE_EVENTS = ["change","complete","error"];
 
 export default class Subscription extends EventEmitter {
 	constructor(db, name) {
 		super();
 
-		// internal subscription state
-		this.s = {
-			// the database to subscribe to
-			database: db,
-			// changes feed filter name
-			name: typeof name === "string" && name ? name : "*",
-			// holds documents in the subscription
-			docs: new Collection(),
-			// promise for current load
-			loading: false,
-			// whether of not ready
-			ready: false,
-			// trackr dep for ready state
-			ready_dep: new Trackr.Dependency()
-		};
+		// the database to subscribe to
+		this.database = db;
+		// changes feed filter name
+		this.name = typeof name === "string" && name ? name : "*";
+		// holds documents in the subscription
+		this.docs = new Collection();
+		// promise for current load
+		this._loading = false;
+		// whether of not ready
+		this.ready = false;
+
+		this.initialize();
 	}
 
-	get database() { return this.s.database; }
-	get name() { return this.s.name; }
+	initialize() {}
+
+	get loading() {
+		return Boolean(this._loading);
+	}
 
 	_onChange(res) {
-		var doc = res.doc;
-		var model;
+		const doc = res.doc;
+		let model;
 
 		if (doc._deleted) {
 			model = this.database.subscription_doc_cache.remove(doc);
@@ -43,18 +43,24 @@ export default class Subscription extends EventEmitter {
 		} else {
 			model = this.database.subscription_doc_cache.add(doc, { merge: true });
 			model.subscriptions.add(this);
-			this.s.docs.add(model);
+			this.docs.add(model);
 		}
 	}
 
 	load() {
-		if (this.s.ready) return Promise.resolve();
-		if (this.s.loading) return this.s.loading;
+		if (this.ready) return Promise.resolve();
+		if (this._loading) return this._loading;
 
-		let onStop;
 		let cancel = false;
-		let onChange = this._onChange.bind(this);
-		let chg_opts = {
+		const onStop = () => cancel = true;
+		this.once("stop", onStop);
+		const finish = () => {
+			this._loading = false;
+			this.removeListener("stop", onStop);
+		};
+
+		const onChange = this._onChange.bind(this);
+		const chg_opts = {
 			returnDocs: false,
 			include_docs: true,
 			since: 0
@@ -64,60 +70,60 @@ export default class Subscription extends EventEmitter {
 			chg_opts.filter = this.name;
 		}
 
-		this.once("stop", onStop = () => cancel = true);
-
-		this.s.loading = Promise.resolve().then(() => {
-			// mark as loading inside promise context
-			this.s.loading = true;
-
-			// catch up changes first
-			var chgs = this.database.changes(chg_opts);
+		// catch up changes first
+		this._loading = Promise.resolve().then(() => {
+			const chgs = this.database.changes(chg_opts);
 			chgs.on("change", onChange);
 			return chgs.then();
-		}).then((res) => {
-			// mark as loaded
-			this.s.loading = false;
-			this.removeListener("stop", onStop);
+		})
+
+		// listen for future changes to the database
+		.then((res) => {
+			// mark as loaded, cancelling if necessary
+			finish();
 			if (cancel) return this._clean();
 
-			// mark as ready
-			this.s.ready = true;
-			this.s.ready_dep.changed();
-			this.emit("ready");
-
-			// listen for future changes and clean up when closed up
-			let chgs = this._changes = this.database.changes(assign({}, chg_opts, {
+			// create a pouchdb changefeed
+			this.changes = this.database.changes({
+				...chg_opts,
 				live: true,
 				since: res.last_seq
-			}));
+			});
 
-			let clean = once((function() {
-				chgs.removeListener("complete", clean);
-				chgs.removeListener("error", clean);
-				chgs.cancel();
-				if (this._changes === chgs) delete this._changes;
-				this.stop();
-			}).bind(this));
+			// listen for changes
+			this.changes.on("change", onChange);
 
-			chgs.on("change", onChange);
-			chgs.on("complete", clean);
-			chgs.on("error", clean);
-		}).catch((e) => {
-			this.s.loading = false;
+			// proxy change events
+			CHANGE_EVENTS.forEach(evt => {
+				this.changes.on(evt, this.emit.bind(this, evt));
+			});
+
+			// mark as ready
+			this.ready = true;
+			this.emit("ready");
+		})
+
+		// handle errors
+		.catch((e) => {
+			finish();
 			this._clean();
 			throw e;
 		});
 
-		return this.s.loading;
+		return this._loading;
 	}
 
 	_clean() {
 		// cancel any running changes
-		if (this._changes) this._changes.cancel();
-		this.s.ready = false;
+		if (this.changes) {
+			this.changes.cancel();
+			delete this.changes;
+		}
+
+		this.ready = false;
 
 		// clean up documents associated with this subscription
-		this.s.docs.each((doc) => {
+		this.docs.each((doc) => {
 			// remove subscription
 			doc.subscriptions.delete(this);
 
@@ -128,17 +134,12 @@ export default class Subscription extends EventEmitter {
 		});
 
 		// empty the collection
-		this.s.docs.reset();
+		this.docs.reset();
 	}
 
 	stop() {
 		this._clean();
 		this.emit("stop");
 		return this;
-	}
-
-	ready() {
-		this.s.ready_dep.depend();
-		return Boolean(this.s.ready);
 	}
 }
