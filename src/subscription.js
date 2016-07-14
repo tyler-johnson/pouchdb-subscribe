@@ -32,7 +32,7 @@ export default class Subscription extends EventEmitter {
 		let model;
 
 		if (doc._deleted) {
-			model = this.database.subscription_doc_cache.remove(doc);
+			model = this.database.subscription_doc_cache.remove(doc._id);
 
 			// remove all sub refs since this model is officially gone
 			// this method will be called again for each sub, but won't get here
